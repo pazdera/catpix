@@ -1,0 +1,55 @@
+#!/usr/bin/env ruby
+
+require 'docopt'
+require 'catpix'
+
+doc = <<DOCOPT
+Print images in the terminal.
+
+Usage:
+  #{__FILE__} --help | --version
+  #{__FILE__} [options] <path>
+
+Options:
+  -w=<width>, --limit-width     Limit width of the image (factor of the size
+                                of the terminal window) [default: 1].
+  -h=<height>, --limit-height   Limit height of the image (factor of the size
+                                of the terminal window) [default: 0],
+  -c=<pos>, --center            Set x, y or xy centering in the window.
+  -b=<colour>, --bg             Set background colour.
+  -f, --bg-fill                 Draw background around the image as well.
+
+  --help                        Show this message.
+  --version                     Print the version.
+DOCOPT
+
+begin
+  args = Docopt::docopt doc, :version => Catpix::VERSION
+rescue Docopt::Exit => e
+  $stderr.puts e.message
+  exit 1
+end
+
+require 'pp'
+
+pp args
+options = {
+  :limit_x => args['--limit-width'].to_f,
+  :limit_y => args['--limit-height'].to_f,
+  :bg_fill => args['--bg-fill']
+}
+
+if args['--center']
+  options[:center_x] = true if args['--center'].include? 'x'
+  options[:center_y] = true if args['--center'].include? 'y'
+
+  if not args['--center'].include? 'x' or not args['--center'].include? 'x'
+    $stderr.puts "Error: Invalid --center argument. Use x, y or xy."
+    $stderr.puts doc
+  end
+end
+
+options[:bg] = args['--bg'] if args['--bg']
+
+Catpix::print_image args['<path>'], options
+exit 0
