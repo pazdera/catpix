@@ -9,10 +9,10 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Radek Pazdera"]
   spec.email         = ["me@radek.io"]
   spec.summary       = %q{Cat images into the terminal.}
-  spec.description   = %q{A library and a script that lets you easily print
-                          images (png, jpg, gif and others) inside the command
-                          line using imagemagick and the extended 256 colour
-                          palette.}
+  spec.description   = %q{Print images (png, jpg, gif and many others) in the
+                          command line with ease. Using rmagick and tco in the
+                          background to read the images and convert them into
+                          the extended 256 colour palette for terminals.}
   spec.homepage      = "https://github.com/pazdera/catpix"
   spec.license       = "MIT"
 
