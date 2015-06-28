@@ -33,9 +33,6 @@ rescue Docopt::Exit => e
   exit 1
 end
 
-require 'pp'
-
-pp args
 options = {
   :limit_x => args['--limit-width'].to_f,
   :limit_y => args['--limit-height'].to_f,
