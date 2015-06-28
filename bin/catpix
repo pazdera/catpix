@@ -1,5 +1,8 @@
 #!/usr/bin/env ruby
 
+# Copyright (c) 2015 Radek Pazdera <me@radek.io>
+# Distributed under the MIT License (see LICENSE.txt)
+
 require 'docopt'
 require 'catpix'
 

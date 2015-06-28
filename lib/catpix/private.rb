@@ -1,3 +1,5 @@
+# Copyright (c) 2015 Radek Pazdera <me@radek.io>
+# Distributed under the MIT License (see LICENSE.txt)
 
 require "rmagick"
 require "tco"
