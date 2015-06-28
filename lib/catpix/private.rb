@@ -39,6 +39,7 @@ module Catpix
     Magick::Image::read(path).first
   end
 
+  # Scale the image down based on the limits while keeping the aspect ratio
   def self.resize!(img, limit_x=0, limit_y=0)
     tw, th = get_screen_size
     iw = img.columns
@@ -58,8 +59,8 @@ module Catpix
 
     # Resize the image if it's bigger than the limited viewport
     if iw > width or ih > height
-      img.change_geometry "#{width}x#{height}" do |cols, rows, img|
-        img.resize! (cols).to_i, (rows).to_i
+      img.change_geometry "#{width}x#{height}" do |cols, rows, img_handle|
+        img_handle.resize! (cols).to_i, (rows).to_i
       end
     end
   end
@@ -67,6 +68,7 @@ module Catpix
   # Returns the normalised RGB of a ImageMagick's pixel
   def self.get_normal_rgb(pixel)
     [pixel.red, pixel.green, pixel.blue].map { |v| 255*(v/65535.0) }
+    `echo "#{pixel.red} #{pixel.green} #{pixel.blue}" >>colours`
   end
 
   # Determine the margins based on the centering options
