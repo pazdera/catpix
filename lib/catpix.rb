@@ -7,6 +7,42 @@ require "terminfo"
 require "pp"
 
 module Catpix
+  def self.print_image(path, options=nil)
+    options = default_options.merge! options
+
+    img = Magick::Image::read(path).first
+    resize! img, options[:limit_x], options[:limit_y]
+
+    margins = get_margins img, options[:center_x], options[:center_y]
+    margin_colour = options[:bg_fill] ? options[:bg] : nil
+
+    print_vert_margin margins[:top], margin_colour
+
+    # print left margin for the first row
+    print_horiz_margin margins[:left], margin_colour
+
+    # Print it
+    img.each_pixel do |pixel, col, row|
+      if pixel.opacity == 65535
+        print_pixel options[:bg]
+      else
+        print_pixel get_normal_rgb pixel
+      end
+
+      if col >= img.columns - 1
+        print_horiz_margin margins[:right], margin_colour
+        puts
+
+        unless row == img.rows - 1
+          print_horiz_margin margins[:left], margin_colour
+        end
+      end
+    end
+
+    print_vert_margin margins[:bottom], margin_colour
+  end
+
+  private
   def self.default_options
     {
       :limit_x => 1.0,
@@ -86,56 +122,19 @@ module Catpix
     end
   end
 
-  def self.print_image(path, options=nil)
-    options = default_options.merge! options
-
-    img = Magick::Image::read(path).first
-    resize! img, options[:limit_x], options[:limit_y]
-
-    margins = get_margins img, options[:center_x], options[:center_y]
+  def self.print_vert_margin(size, colour)
     tw, th = get_screen_size
-
-    margins[:top].times do
-      tw.times do
-        print_pixel options[:bg_fill] ? options[:bg] : nil
-      end
+    size.times do
+      tw.times { print_pixel colour }
       puts
     end
+  end
 
-    # print left margin for the first row
-    margins[:left].times do
-      print_pixel options[:bg_fill] ? options[:bg] : nil
-    end
+  def self.print_horiz_margin(size, colour)
+    size.times { print_pixel colour }
+  end
 
-    # Print it
-    img.each_pixel do |pixel, col, row|
-      if pixel.opacity == 65535
-        print_pixel options[:bg]
-      else
-        c = [pixel.red, pixel.green, pixel.blue].map { |v| 255*(v/65535.0) }
-        print_pixel c
-      end
-
-      if col >= img.columns - 1
-        margins[:right].times do
-          print_pixel options[:bg_fill] ? options[:bg] : nil
-        end
-
-        puts
-
-        unless row == img.rows - 1
-          margins[:left].times do
-            print_pixel options[:bg_fill] ? options[:bg] : nil
-          end
-        end
-      end
-    end
-
-    margins[:bottom].times do
-      tw.times do
-        print_pixel options[:bg_fill] ? options[:bg] : nil
-      end
-      puts
-    end
+  def self.get_normal_rgb(pixel)
+    [pixel.red, pixel.green, pixel.blue].map { |v| 255*(v/65535.0) }
   end
 end
