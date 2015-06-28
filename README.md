@@ -24,14 +24,6 @@ straight from my phone and rendered in the terminal:
 
 ![Full photo](http://radek.io/assets/images/posts/catpix/photo.png)
 
-### More examples
-
-![UK Flag](http://radek.io/assets/images/posts/catpix/flag.png)
-
-![Happy Panda](http://radek.io/assets/images/posts/catpix/panda.png)
-
-![Trophy](http://radek.io/assets/images/posts/catpix/trophy.png)
-
 ## Usage
 
 ### In the terminal
@@ -79,6 +71,14 @@ Catpix::print_image "pokemon.png",
 
 See the [documentation at RubyDoc](http://www.rubydoc.info/github/pazdera/catpix/master/Catpix.print_image)
 for more detail.
+
+## More examples
+
+![UK Flag](http://radek.io/assets/images/posts/catpix/flag.png)
+
+![Happy Panda](http://radek.io/assets/images/posts/catpix/panda.png)
+
+![Trophy](http://radek.io/assets/images/posts/catpix/trophy.png)
 
 ## Installation
 
