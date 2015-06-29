@@ -9,12 +9,12 @@ module Catpix
   private
   def self.default_options
     {
-      :limit_x => 1.0,
-      :limit_y => 0,
-      :center_x => false,
-      :center_y => false,
-      :bg => nil,
-      :bg_fill => false
+      limit_x: 1.0,
+      limit_y: 0,
+      center_x: false,
+      center_y: false,
+      bg: nil,
+      bg_fill: false
     }
   end
 
