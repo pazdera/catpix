@@ -144,26 +144,27 @@ module Catpix
     buffer = ""
     if high_res?
       (size / 2).times do
-        tw.times { buffer += prep_hr_pixel colour, colour }
-        buffer += "\n"
+        sub_buffer = ""
+        tw.times { sub_buffer += prep_hr_pixel nil, nil }
+        buffer += sub_buffer.bg(colour) + "\n"
       end
     else
       size.times do
-        tw.times { buffer += prep_lr_pixel colour }
-        buffer += "\n"
+        sub_buffer = ""
+        tw.times { sub_buffer += prep_lr_pixel nil }
+        buffer += sub_buffer.bg(colour) + "\n"
       end
     end
-    buffer
   end
 
   def self.prep_horiz_margin(size, colour)
     buffer = ""
     if high_res?
-      size.times { buffer += prep_hr_pixel colour, colour }
+      size.times { buffer += prep_hr_pixel nil, nil }
     else
-      size.times { buffer += prep_lr_pixel colour }
+      size.times { buffer += prep_lr_pixel nil }
     end
-    buffer
+    buffer.bg colour
   end
 
   # Print the image in low resolution
