@@ -21,6 +21,8 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
+  spec.required_ruby_version = ">= 1.9"
+
   spec.add_dependency "tco", "~> 0.1", ">= 0.1.6"
   spec.add_dependency "rmagick", "~> 2.15", ">= 2.15.2"
   spec.add_dependency "docopt", "~> 0.5", ">= 0.5.0"
