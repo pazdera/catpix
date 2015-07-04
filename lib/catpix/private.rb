@@ -68,7 +68,6 @@ module Catpix
   # Returns the normalised RGB of a ImageMagick's pixel
   def self.get_normal_rgb(pixel)
     [pixel.red, pixel.green, pixel.blue].map { |v| 255*(v/65535.0) }
-    `echo "#{pixel.red} #{pixel.green} #{pixel.blue}" >>colours`
   end
 
   # Determine the margins based on the centering options
