@@ -56,23 +56,31 @@ module Catpix
     print_horiz_margin margins[:left], margin_colour
 
     # print the image
-    img.each_pixel do |pixel, col, row|
-      if pixel.opacity == 65535
-        print_pixel options[:bg]
-      else
-        print_pixel get_normal_rgb pixel
-      end
-
-      if col >= img.columns - 1
-        print_horiz_margin margins[:right], margin_colour
-        puts
-
-        unless row == img.rows - 1
-          print_horiz_margin margins[:left], margin_colour
-        end
+    0.step(img.rows - 1, 2) do |row|
+      0.upto(img.columns - 1) do |col|
+        colour_top = get_normal_rgb(img.pixel_color(col, row))
+        colour_bottom = get_normal_rgb(img.pixel_color(col, row+1))
+        print_pixel(colour_top, colour_bottom)
       end
     end
 
-    print_vert_margin margins[:bottom], margin_colour
+    # img.each_pixel do |pixel, col, row|
+    #   if pixel.opacity == 65535
+    #     print_pixel options[:bg]
+    #   else
+    #     print_pixel get_normal_rgb pixel
+    #   end
+
+    #   if col >= img.columns - 1
+    #     print_horiz_margin margins[:right], margin_colour
+    #     puts
+
+    #     unless row == img.rows - 1
+    #       print_horiz_margin margins[:left], margin_colour
+    #     end
+    #   end
+    # end
+
+    # print_vert_margin margins[:bottom], margin_colour
   end
 end

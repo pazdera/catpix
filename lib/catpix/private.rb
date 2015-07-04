@@ -18,12 +18,8 @@ module Catpix
     }
   end
 
-  def self.print_pixel(colour=nil)
-    if colour
-      print "  ".bg colour
-    else
-      print "  "
-    end
+  def self.print_pixel(colour_top=nil, colour_bottom=nil)
+    print "\u2584".bg(colour_top).fg(colour_bottom)
   end
 
   # Returns normalised size of the terminal window
@@ -32,7 +28,7 @@ module Catpix
   # so we need to divide the width of the terminal by 2.
   def self.get_screen_size
     th, tw = TermInfo.screen_size
-    [tw / 2, th]
+    [tw, th * 2]
   end
 
   def self.load_image(path)
