@@ -14,21 +14,39 @@ module Catpix
       center_x: false,
       center_y: false,
       bg: nil,
-      bg_fill: false
+      bg_fill: false,
+      resolution: 'auto'
     }
   end
 
-  def self.print_pixel(colour_top=nil, colour_bottom=nil)
-    print "\u2584".bg(colour_top).fg(colour_bottom)
+  @@resolution = nil
+
+  def self.high_res?
+    @@resolution == 'high'
+  end
+
+  def self.print_pixel(colour)
+    if colour
+      print "  ".bg colour
+    else
+      print "  "
+    end
+  end
+
+  def self.can_use_utf8?
+    ENV.values_at("LC_ALL", "LC_CTYPE", "LANG").compact.first.include?("UTF-8")
   end
 
   # Returns normalised size of the terminal window
   #
-  # Catpix uses two blank characters to approximate pixels in the terminal,
-  # so we need to divide the width of the terminal by 2.
+  # Catpix can use either two blank spaces to approximate a pixel in the
+  # temrinal or the 'upper half block' and 'bottom half block' characters.
+  #
+  # Depending on which of the above will be used, the screen size
+  # must be normalised accordingly.
   def self.get_screen_size
     th, tw = TermInfo.screen_size
-    [tw, th * 2]
+    if high_res? then [tw, th * 2] else [tw / 2, th] end
   end
 
   def self.load_image(path)
@@ -89,18 +107,35 @@ module Catpix
       margins[:bottom] = 0
     end
 
+    if high_res? and margins[:top] % 2 and margins[:bottom] % 2
+      margins[:top] -= 1
+      margins[:bottom] += 1
+    end
+
     margins
   end
 
   def self.print_vert_margin(size, colour)
     tw, th = get_screen_size
-    size.times do
-      tw.times { print_pixel colour }
-      puts
+
+    if high_res?
+      (size / 2).times do
+        tw.times { print get_two_pixels colour, colour }
+        puts
+      end
+    else
+      size.times do
+        tw.times { print_pixel colour }
+        puts
+      end
     end
   end
 
   def self.print_horiz_margin(size, colour)
-    size.times { print_pixel colour }
+    if high_res?
+      size.times { print get_two_pixels colour, colour }
+    else
+      size.times { print_pixel colour }
+    end
   end
 end

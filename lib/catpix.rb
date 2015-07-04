@@ -41,46 +41,112 @@ module Catpix
   #                              alias 'red' or 'blue'. [default: nil]
   # @option options [Boolean] :bg_fill Fill the margins around the image with
   #                                    background colour. [default: false]
+  # @option options [String] :resolution Determines the pixel size of the
+  #                                      rendered image. Can be set to `high`,
+  #                                      `low` or `auto` (default). If set to
+  #                                      `auto` the resolution will be picked
+  #                                      automatically based on your terminal's
+  #                                      support of unicode.
   def self.print_image(path, options={})
     options = default_options.merge! options
+
+    if options[:resolution] == 'auto'
+      options[:resolution] = can_use_utf8? ? 'high' : 'low'
+    end
+    @@resolution = options[:resolution]
 
     img = load_image path
     resize! img, options[:limit_x], options[:limit_y]
 
     margins = get_margins img, options[:center_x], options[:center_y]
-    margin_colour = options[:bg_fill] ? options[:bg] : nil
+    margins[:colour] = options[:bg_fill] ? options[:bg] : nil
 
-    print_vert_margin margins[:top], margin_colour
+    if high_res?
+      do_print_unicode img, margins, options
+    else
+      do_print img, margins, options
+    end
+  end
+
+  def self.do_print(img, margins, options)
+    print_vert_margin margins[:top], margins[:colour]
 
     # print left margin for the first row
-    print_horiz_margin margins[:left], margin_colour
+    print_horiz_margin margins[:left], margins[:colour]
 
-    # print the image
-    0.step(img.rows - 1, 2) do |row|
-      0.upto(img.columns - 1) do |col|
-        colour_top = get_normal_rgb(img.pixel_color(col, row))
-        colour_bottom = get_normal_rgb(img.pixel_color(col, row+1))
-        print_pixel(colour_top, colour_bottom)
+    img.each_pixel do |pixel, col, row|
+      if pixel.opacity == 65535
+        print_pixel options[:bg]
+      else
+        print_pixel get_normal_rgb pixel
+      end
+
+      if col >= img.columns - 1
+        print_horiz_margin margins[:right], margins[:colour]
+        puts
+
+        unless row == img.rows - 1
+          print_horiz_margin margins[:left], margins[:colour]
+        end
       end
     end
 
-    # img.each_pixel do |pixel, col, row|
-    #   if pixel.opacity == 65535
-    #     print_pixel options[:bg]
-    #   else
-    #     print_pixel get_normal_rgb pixel
-    #   end
+    print_vert_margin margins[:bottom], margins[:colour]
+  end
 
-    #   if col >= img.columns - 1
-    #     print_horiz_margin margins[:right], margin_colour
-    #     puts
+  def self.do_print_unicode(img, margins, options)
+    print_vert_margin margins[:top], margins[:colour]
 
-    #     unless row == img.rows - 1
-    #       print_horiz_margin margins[:left], margin_colour
-    #     end
-    #   end
-    # end
+    # print left margin for the first row
+    print_horiz_margin margins[:left], margins[:colour]
 
-    # print_vert_margin margins[:bottom], margin_colour
+    # print the image
+    0.step(img.rows - 1, 2) do |row|
+      # line buffering makes it about 20% faster
+      buffer = ""
+      0.upto(img.columns - 1) do |col|
+        top_pixel = img.pixel_color col, row
+        colour_top = if top_pixel.opacity < 65535
+          get_normal_rgb top_pixel
+        else
+          options[:bg]
+        end
+
+        bottom_pixel = img.pixel_color col, row + 1
+        colour_bottom = if bottom_pixel.opacity < 65535
+          get_normal_rgb bottom_pixel
+        else
+          options[:bg]
+        end
+
+        buffer += get_two_pixels(colour_top, colour_bottom)
+      end
+      print buffer
+      print_horiz_margin margins[:right], margins[:colour]
+      puts
+
+      unless row == img.rows - 1
+        print_horiz_margin margins[:left], margins[:colour]
+      end
+    end
+
+    print_vert_margin margins[:bottom], margins[:colour]
+  end
+
+  def self.get_two_pixels(colour_top, colour_bottom)
+    upper = "\u2580"
+    lower = "\u2584"
+
+    return " " if colour_bottom.nil? and colour_top.nil?
+    return lower.fg colour_bottom if colour_top.nil?
+    return upper.fg colour_top if colour_bottom.nil?
+
+    c_top = Tco::match_colour colour_top
+    c_bottom = Tco::match_colour colour_bottom
+    if c_top == c_bottom
+      return " ".bg "@#{c_top}"
+    end
+
+    upper.fg("@#{c_top}").bg("@#{c_bottom}")
   end
 end

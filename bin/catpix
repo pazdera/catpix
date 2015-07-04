@@ -21,6 +21,7 @@ Options:
   -c=<pos>, --center            Set x, y or xy centering in the window.
   -b=<colour>, --bg             Set background colour.
   -f, --bg-fill                 Draw background around the image as well.
+  -r=<res>, --resolution        Either 'high' or 'low' [default: auto].
 
   --help                        Show this message.
   --version                     Print the version.
@@ -36,7 +37,8 @@ end
 options = {
   :limit_x => args['--limit-width'].to_f,
   :limit_y => args['--limit-height'].to_f,
-  :bg_fill => args['--bg-fill']
+  :bg_fill => args['--bg-fill'],
+  :resolution => args['--resolution']
 }
 
 if args['--center']
