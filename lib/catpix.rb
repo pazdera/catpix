@@ -62,91 +62,9 @@ module Catpix
     margins[:colour] = options[:bg_fill] ? options[:bg] : nil
 
     if high_res?
-      do_print_unicode img, margins, options
+      do_print_image_hr img, margins, options
     else
-      do_print img, margins, options
+      do_print_image_lr img, margins, options
     end
-  end
-
-  def self.do_print(img, margins, options)
-    print_vert_margin margins[:top], margins[:colour]
-
-    # print left margin for the first row
-    print_horiz_margin margins[:left], margins[:colour]
-
-    img.each_pixel do |pixel, col, row|
-      if pixel.opacity == 65535
-        print_pixel options[:bg]
-      else
-        print_pixel get_normal_rgb pixel
-      end
-
-      if col >= img.columns - 1
-        print_horiz_margin margins[:right], margins[:colour]
-        puts
-
-        unless row == img.rows - 1
-          print_horiz_margin margins[:left], margins[:colour]
-        end
-      end
-    end
-
-    print_vert_margin margins[:bottom], margins[:colour]
-  end
-
-  def self.do_print_unicode(img, margins, options)
-    print_vert_margin margins[:top], margins[:colour]
-
-    # print left margin for the first row
-    print_horiz_margin margins[:left], margins[:colour]
-
-    # print the image
-    0.step(img.rows - 1, 2) do |row|
-      # line buffering makes it about 20% faster
-      buffer = ""
-      0.upto(img.columns - 1) do |col|
-        top_pixel = img.pixel_color col, row
-        colour_top = if top_pixel.opacity < 65535
-          get_normal_rgb top_pixel
-        else
-          options[:bg]
-        end
-
-        bottom_pixel = img.pixel_color col, row + 1
-        colour_bottom = if bottom_pixel.opacity < 65535
-          get_normal_rgb bottom_pixel
-        else
-          options[:bg]
-        end
-
-        buffer += get_two_pixels(colour_top, colour_bottom)
-      end
-      print buffer
-      print_horiz_margin margins[:right], margins[:colour]
-      puts
-
-      unless row == img.rows - 1
-        print_horiz_margin margins[:left], margins[:colour]
-      end
-    end
-
-    print_vert_margin margins[:bottom], margins[:colour]
-  end
-
-  def self.get_two_pixels(colour_top, colour_bottom)
-    upper = "\u2580"
-    lower = "\u2584"
-
-    return " " if colour_bottom.nil? and colour_top.nil?
-    return lower.fg colour_bottom if colour_top.nil?
-    return upper.fg colour_top if colour_bottom.nil?
-
-    c_top = Tco::match_colour colour_top
-    c_bottom = Tco::match_colour colour_bottom
-    if c_top == c_bottom
-      return " ".bg "@#{c_top}"
-    end
-
-    upper.fg("@#{c_top}").bg("@#{c_bottom}")
   end
 end

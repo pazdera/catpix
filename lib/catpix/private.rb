@@ -7,6 +7,8 @@ require "terminfo"
 
 module Catpix
   private
+  MAX_OPACITY = 65535
+
   def self.default_options
     {
       limit_x: 1.0,
@@ -25,16 +27,37 @@ module Catpix
     @@resolution == 'high'
   end
 
-  def self.print_pixel(colour)
-    if colour
-      print "  ".bg colour
-    else
-      print "  "
-    end
-  end
-
   def self.can_use_utf8?
     ENV.values_at("LC_ALL", "LC_CTYPE", "LANG").compact.first.include?("UTF-8")
+  end
+
+  def self.prep_lr_pixel(colour)
+    colour ? "  ".bg(colour) : "  "
+  end
+
+  def self.print_lr_pixel(colour)
+    print prep_lr_pixel colour
+  end
+
+  def self.prep_hr_pixel(colour_top, colour_bottom)
+    upper = "\u2580"
+    lower = "\u2584"
+
+    return " " if colour_bottom.nil? and colour_top.nil?
+    return lower.fg colour_bottom if colour_top.nil?
+    return upper.fg colour_top if colour_bottom.nil?
+
+    c_top = Tco::match_colour colour_top
+    c_bottom = Tco::match_colour colour_bottom
+    if c_top == c_bottom
+      return " ".bg "@#{c_top}"
+    end
+
+    upper.fg("@#{c_top}").bg("@#{c_bottom}")
+  end
+
+  def self.print_hr_pixel(colour_top, colour_bottom)
+    print prep_hr_pixel colour_top, colour_bottom
   end
 
   # Returns normalised size of the terminal window
@@ -115,27 +138,84 @@ module Catpix
     margins
   end
 
-  def self.print_vert_margin(size, colour)
+  def self.prep_vert_margin(size, colour)
     tw, th = get_screen_size
 
+    buffer = ""
     if high_res?
       (size / 2).times do
-        tw.times { print get_two_pixels colour, colour }
-        puts
+        tw.times { buffer += prep_hr_pixel colour, colour }
+        buffer += "\n"
       end
     else
       size.times do
-        tw.times { print_pixel colour }
-        puts
+        tw.times { buffer += prep_lr_pixel colour }
+        buffer += "\n"
       end
     end
+    buffer
   end
 
-  def self.print_horiz_margin(size, colour)
+  def self.prep_horiz_margin(size, colour)
+    buffer = ""
     if high_res?
-      size.times { print get_two_pixels colour, colour }
+      size.times { buffer += prep_hr_pixel colour, colour }
     else
-      size.times { print_pixel colour }
+      size.times { buffer += prep_lr_pixel colour }
     end
+    buffer
+  end
+
+  # Print the image in low resolution
+  def self.do_print_image_lr(img, margins, options)
+    print prep_vert_margin margins[:top], margins[:colour]
+
+    0.upto(img.rows - 1) do |row|
+      buffer = prep_horiz_margin margins[:left], margins[:colour]
+      0.upto(img.columns - 1) do |col|
+        pixel = img.pixel_color col, row
+
+        buffer += if pixel.opacity == MAX_OPACITY
+          prep_lr_pixel options[:bg]
+        else
+          prep_lr_pixel get_normal_rgb pixel
+        end
+      end
+      buffer += prep_horiz_margin margins[:right], margins[:colour]
+      puts buffer
+    end
+
+    print prep_vert_margin margins[:bottom], margins[:colour]
+  end
+
+  # Print the image in high resolution (using unicode's upper half block)
+  def self.do_print_image_hr(img, margins, options)
+    print prep_vert_margin margins[:top], margins[:colour]
+
+    0.step(img.rows - 1, 2) do |row|
+      # line buffering makes it about 20% faster
+      buffer = prep_horiz_margin margins[:left], margins[:colour]
+      0.upto(img.columns - 1) do |col|
+        top_pixel = img.pixel_color col, row
+        colour_top = if top_pixel.opacity < MAX_OPACITY
+          get_normal_rgb top_pixel
+        else
+          options[:bg]
+        end
+
+        bottom_pixel = img.pixel_color col, row + 1
+        colour_bottom = if bottom_pixel.opacity < MAX_OPACITY
+          get_normal_rgb bottom_pixel
+        else
+          options[:bg]
+        end
+
+        buffer += prep_hr_pixel colour_top, colour_bottom
+      end
+      buffer += prep_horiz_margin margins[:right], margins[:colour]
+      puts buffer
+    end
+
+    print prep_vert_margin margins[:bottom], margins[:colour]
   end
 end
