@@ -24,6 +24,18 @@ straight from my phone and rendered in the terminal:
 
 ![Full photo](http://radek.io/assets/images/posts/catpix/photo.png)
 
+### Resolutions (new in 0.2.0)
+
+Catpix can render images in two resolutions. If you terminal supports
+unicode, it will use the
+[upper half block](http://www.fileformat.info/info/unicode/char/2580/index.htm)
+to dispplay one pixel. Otherwise, a pixel will be approximated as two
+spaces. The detection is automatic, but you can also force one or the
+other via _options_. The higher setting has four times as many pixels as the
+lower one. See how do they compare below:
+
+![Comparing resolutions](http://radek.io/assets/images/posts/catpix/resolution.gif)
+
 ## Usage
 
 ### In the terminal
@@ -52,6 +64,7 @@ it's centered:
     $ catpix tux.png -b "#00ff00"      # RGB is fine
     $ catpix tux.png -b green          # tco aliases work too
     $ catpix tux.png -c xy -b green -f # fill the margins around the image too
+    $ catpix tux.png -c xy -r high     # enforce high resolution
 
 ### In Ruby
 
@@ -66,7 +79,8 @@ Catpix::print_image "pokemon.png",
   :center_x => true,
   :center_y => true,
   :bg => "white",
-  :bg_fill => true
+  :bg_fill => true,
+  :resolution => low
 ```
 
 See the [documentation at RubyDoc](http://www.rubydoc.info/github/pazdera/catpix/master/Catpix.print_image)
