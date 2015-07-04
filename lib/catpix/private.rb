@@ -155,6 +155,7 @@ module Catpix
         buffer += sub_buffer.bg(colour) + "\n"
       end
     end
+    buffer
   end
 
   def self.prep_horiz_margin(size, colour)
