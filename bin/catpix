@@ -10,8 +10,8 @@ doc = <<DOCOPT
 Print images in the terminal.
 
 Usage:
-  #{__FILE__} --help | --version
-  #{__FILE__} [options] <path>
+  #{File.basename __FILE__} --help | --version
+  #{File.basename __FILE__} [options] <path>
 
 Options:
   -w=<width>, --limit-width     Limit width of the image (factor of the size
