@@ -80,7 +80,7 @@ Catpix::print_image "pokemon.png",
   :center_y => true,
   :bg => "white",
   :bg_fill => true,
-  :resolution => low
+  :resolution => "low"
 ```
 
 See the [documentation at RubyDoc](http://www.rubydoc.info/github/pazdera/catpix/master/Catpix.print_image)
